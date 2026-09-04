@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <style>
+    :root {
+      --bg-main: #130f1e;
+      --bg-card: #1c152e;
+      --bg-input: #271e3d;
+      --border-color: #3b2c5e;
+      --accent-purple: #9d4edd;
+      --accent-green: #00e676;
+      --text-main: #f3f0f7;
+      --text-muted: #a69cb8;
+    }
+
+    body {
+      width: 360px;
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 14px;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    .header-title {
+      margin: 0 0 12px 0;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    .header-title span {
+      color: var(--accent-green);
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--accent-purple);
+      margin-top: 10px;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    label {
+      font-size: 11px;
+      display: block;
+      margin-top: 6px;
+      margin-bottom: 3px;
+      color: var(--text-muted);
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--bg-input);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 7px;
+      box-sizing: border-box;
+      resize: vertical;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--accent-purple);
+    }
+
+    .txt-template {
+      height: 46px;
+    }
+
+    .txt-links {
+      height: 52px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      white-space: pre;
+    }
+
+    .badge {
+      background: rgba(0, 230, 118, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .file-box {
+      background: var(--bg-card);
+      border: 1px dashed var(--border-color);
+      border-radius: 6px;
+      padding: 8px;
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    input[type="file"] {
+      font-size: 11px;
+      color: var(--text-muted);
+      width: 100%;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: none;
+      padding: 9px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-save {
+      flex: 1;
+      background: #7b2cbf;
+      color: #ffffff;
+    }
+
+    .btn-save:hover {
+      background: #9d4edd;
+    }
+
+    .btn-run {
+      flex: 1;
+      background: var(--accent-green);
+      color: #0b2916;
+    }
+
+    .btn-run:hover {
+      background: #39ff96;
+      box-shadow: 0 0 10px rgba(0, 230, 118, 0.4);
+    }
+
+    .btn-clear {
+      width: 100%;
+      background: rgba(244, 67, 54, 0.15);
+      color: #ff6b6b;
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      padding: 4px;
+      font-size: 10px;
+      margin-top: 6px;
+    }
+
+    .btn-clear:hover {
+      background: rgba(244, 67, 54, 0.25);
+    }
+  </style>
+</head>
+<body>
+  <div class="header-title">Atur profil FB BY : <span>ROTI BAKAR RIICH</span></div>
+
+  <!-- 1. TEMPLATE KATA-KATA -->
+  <div class="section-title">1. Template Kata-Kata</div>
+  <label>Caption Foto Profil:</label>
+  <textarea id="captionText" class="txt-template" placeholder="Masukkan template caption profil..."></textarea>
+
+  <label>Bio Profil:</label>
+  <textarea id="bioText" class="txt-template" placeholder="Contoh: Info lengkap di bio 👉 atau cek di bawah 👇"></textarea>
+
+  <!-- 2. POOL FOTO PROFIL & SAMPUL GACHA -->
+  <div class="section-title" style="margin-top: 12px;">
+    2. Folder Foto Profil
+    <span class="badge" id="photoCounter">0 Foto</span>
+  </div>
+  <div class="file-box">
+    <input type="file" id="photoFolder" webkitdirectory directory multiple accept="image/*">
+    <button class="btn-clear" id="btnClearPhotos">Kosongkan Pool Foto Profil</button>
+  </div>
+
+  <div class="section-title" style="margin-top: 12px;">
+    3. Folder Foto Sampul
+    <span class="badge" id="coverCounter">0 Foto</span>
+  </div>
+  <div class="file-box">
+    <input type="file" id="coverFolder" webkitdirectory directory multiple accept="image/*">
+    <button class="btn-clear" id="btnClearCoverPhotos">Kosongkan Pool Foto Sampul</button>
+  </div>
+
+  <!-- 4. PENEMPATAN LINK -->
+  <div class="section-title" style="margin-top: 12px;">4. Daftar Antrean Link</div>
+  <label>Link Bio: <span class="badge" id="countBioLink" style="float: right;">0</span></label>
+  <textarea id="linksBio" class="txt-links" placeholder="Antrean link khusus bio..."></textarea>
+
+  <label>Link Foto Profil: <span class="badge" id="countProfileLink" style="float: right;">0</span></label>
+  <textarea id="linksProfile" class="txt-links" placeholder="Antrean link khusus foto profil..."></textarea>
+
+  <label>Link Postingan: <span class="badge" id="countPostLink" style="float: right;">0</span></label>
+  <textarea id="linksPost" class="txt-links" placeholder="Antrean link khusus postingan..."></textarea>
+
+  <!-- TOMBOL AKSI -->
+  <div class="button-group">
+    <button class="btn-save" id="btnSave">💾 Simpan Data</button>
+    <button class="btn-run" id="btnExecute">🚀 Eksekusi Tab</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

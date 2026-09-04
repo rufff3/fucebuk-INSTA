@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "FB Automation Profile & Post",
+  "version": "1.1",
+  "description": "Otomasi Bio, Foto Profil Gacha, dan Postingan FB via Shortcut",
+  "permissions": ["storage", "activeTab", "scripting", "unlimitedStorage"],
+  "host_permissions": ["*://*.facebook.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "commands": {
+    "run-automation": {
+      "suggested_key": {
+        "default": "Alt+X",
+        "mac": "Alt+X"
+      },
+      "description": "Eksekusi Otomasi FB"
+    }
+  }
+}
