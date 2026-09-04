@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Facebook Cookie Extractor - SessionBox Compatible",
+  "version": "2.1",
+  "description": "Mengekstrak cookie sesi Facebook per-tab SessionBox secara otomatis.",
+  "permissions": [
+    "webRequest",
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.facebook.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.facebook.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
