@@ -1,16 +1,19 @@
 {
   "manifest_version": 3,
   "name": "Meta/IG TempMail OTP Grabber",
-  "version": "1.2",
-  "description": "Generator email acak dan auto-grabber kode OTP Meta/IG.",
+  "version": "1.4",
+  "description": "Generator email acak, auto-grabber OTP, dan multi-tab auto-injector Meta/IG.",
   "permissions": [
     "storage",
-    "clipboardWrite",
+    "tabs",
+    "scripting",
+    "activeTab",
     "sidePanel",
-    "contextMenus"
+    "contextMenus",
+    "clipboardWrite"
   ],
   "host_permissions": [
-    "https://rufff3.my.id/*"
+    "<all_urls>"
   ],
   "background": {
     "service_worker": "background.js"

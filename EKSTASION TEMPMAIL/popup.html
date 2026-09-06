@@ -33,7 +33,7 @@
       display: flex;
       gap: 10px;
       align-items: flex-end;
-      margin-bottom: 14px;
+      margin-bottom: 10px;
       background: #1c1e21;
       padding: 12px;
       border-radius: 8px;
@@ -42,6 +42,11 @@
     .control-col-input { flex: 0 0 110px; }
     .control-col-btn { flex: 1; }
     .control-col-stop { flex: 0 0 auto; }
+    .inject-panel {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
     label {
       font-size: 11px;
       font-weight: bold;
@@ -69,6 +74,8 @@
     button:hover { opacity: 0.85; }
     .btn-primary { background: #1877f2; color: #fff; }
     .btn-success { background: #42b72a; color: #fff; }
+    .btn-inject { background: #207be6; color: #fff; flex: 1; padding: 10px; font-size: 13px; }
+    .btn-inject-otp { background: #28a745; color: #fff; flex: 1; padding: 10px; font-size: 13px; }
     .btn-stop { background: #fa3e3e; color: #fff; }
     .btn-save { background: #2e89ff; color: #fff; padding: 4px 8px; font-size: 11px; }
     .btn-copy { background: #3a3b3c; color: #fff; padding: 4px 8px; font-size: 11px; }
@@ -166,6 +173,11 @@
     <div class="control-col-stop">
       <button id="btn-stop" class="btn-stop" style="height: 35px; display: none;">STOP</button>
     </div>
+  </div>
+
+  <div class="inject-panel">
+    <button id="btn-inject-email" class="btn-inject">INJECT EMAIL (ALL TABS)</button>
+    <button id="btn-inject-otp" class="btn-inject-otp">INJECT OTP (ALL TABS)</button>
   </div>
 
   <div class="table-container">

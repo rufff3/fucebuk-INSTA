@@ -1,8 +1,14 @@
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
-    id: "open_side_panel",
-    title: "Buka di Side Panel",
-    contexts: ["action"]
+  if (chrome.sidePanel && chrome.sidePanel.setPanelBehavior) {
+    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
+  }
+
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: "open_side_panel",
+      title: "Buka di Side Panel",
+      contexts: ["action"]
+    });
   });
 });
 
