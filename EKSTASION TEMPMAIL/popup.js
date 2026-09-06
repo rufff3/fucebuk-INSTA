@@ -4,20 +4,33 @@ const API_BASE = "https://rufff3.my.id/api/emails/";
 let activeList = [];
 let isMonitoring = false;
 let monitorInterval = null;
+let savedPasswordVal = "";
 
 const inputCount = document.getElementById("input-count");
 const btnGenerate = document.getElementById("btn-generate");
 const btnStop = document.getElementById("btn-stop");
 const btnInjectEmail = document.getElementById("btn-inject-email");
 const btnInjectOtp = document.getElementById("btn-inject-otp");
+const btnGrabUsername = document.getElementById("btn-grab-username");
 const emailListBody = document.getElementById("email-list-body");
 const monitorStatus = document.getElementById("monitor-status");
+
 const savedEmailsBox = document.getElementById("saved-emails-box");
 const savedCountEl = document.getElementById("saved-count");
 const btnImportSaved = document.getElementById("btn-import-saved");
 const btnCopySaved = document.getElementById("btn-copy-saved");
 const btnDeleteSaved = document.getElementById("btn-delete-saved");
+
+const savedUsernamesBox = document.getElementById("saved-usernames-box");
+const savedUsernamesCountEl = document.getElementById("saved-usernames-count");
+const btnCopyUsernames = document.getElementById("btn-copy-usernames");
+const btnDeleteUsernames = document.getElementById("btn-delete-usernames");
+
 const btnTogglePanel = document.getElementById("btn-toggle-panel");
+
+const inputPassword = document.getElementById("input-password");
+const btnEditPassword = document.getElementById("btn-edit-password");
+const btnSavePassword = document.getElementById("btn-save-password");
 
 if (btnTogglePanel) {
   btnTogglePanel.onclick = async () => {
@@ -102,8 +115,36 @@ function renderTable() {
   });
 }
 
-// Injeksi Form Email Pada Tab (Mendukung Selector Email 1 & 2)
-function injectEmailContent(emailVal) {
+function loadSavedPassword() {
+  chrome.storage.local.get(["saved_user_password"], (result) => {
+    savedPasswordVal = result.saved_user_password || "";
+    if (inputPassword) {
+      inputPassword.value = savedPasswordVal;
+      inputPassword.readOnly = true;
+    }
+  });
+}
+
+if (btnEditPassword && btnSavePassword && inputPassword) {
+  btnEditPassword.onclick = () => {
+    inputPassword.readOnly = false;
+    inputPassword.focus();
+    btnEditPassword.style.display = "none";
+    btnSavePassword.style.display = "inline-block";
+  };
+
+  btnSavePassword.onclick = () => {
+    savedPasswordVal = inputPassword.value;
+    chrome.storage.local.set({ saved_user_password: savedPasswordVal }, () => {
+      inputPassword.readOnly = true;
+      btnSavePassword.style.display = "none";
+      btnEditPassword.style.display = "inline-block";
+    });
+  };
+}
+
+// Injeksi Form Email & Sandi Pada Tab
+function injectEmailContent(emailVal, passwordVal) {
   const setNativeValue = (element, value) => {
     const valueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
     const prototype = Object.getPrototypeOf(element);
@@ -122,24 +163,40 @@ function injectEmailContent(emailVal) {
   };
 
   const targetEl = 
-    // Email 1 (aria-label="Email" atau type="email")
     document.querySelector('input[type="email"]') ||
     document.querySelector('input[aria-label="Email" i]') ||
-    // Email 2 (inputmode="email" atau autocomplete="username")
     document.querySelector('input[inputmode="email"]') ||
     document.querySelector('input[autocomplete="username"]') ||
-    // Fallback varian mobile/tel
     document.querySelector('input[aria-label="Mobile Number"]') ||
     document.querySelector('input[aria-label*="Mobile" i]') ||
     document.querySelector('input[type="tel"]') ||
     document.querySelector('input[name="reg_email__"]');
 
+  let injected = false;
   if (targetEl) {
     targetEl.focus();
     setNativeValue(targetEl, emailVal);
-    return true;
+    injected = true;
   }
-  return false;
+
+  const passwordEl = 
+    document.querySelector('input[name="password"]') ||
+    document.querySelector('input[type="password"]');
+
+  if (passwordEl && passwordVal) {
+    passwordEl.focus();
+    setNativeValue(passwordEl, passwordVal);
+
+    const loginBtn = 
+      document.querySelector('div[role="button"][aria-label="Log in"]') ||
+      document.querySelector('button[type="submit"]');
+
+    if (loginBtn) {
+      loginBtn.click();
+    }
+  }
+
+  return injected;
 }
 
 // Injeksi Form OTP Pada Tab (Mendukung Selector OTP 1 & 2)
@@ -162,13 +219,10 @@ function injectOtpContent(otpVal) {
   };
 
   const targetEl = 
-    // OTP 2 (autocomplete="one-time-code" atau maxlength="6")
     document.querySelector('input[autocomplete="one-time-code"]') ||
-    // OTP 1 (Confirmation code)
     document.querySelector('input[aria-label="Confirmation code"]') ||
     document.querySelector('input[aria-label*="Confirmation" i]') ||
     document.querySelector('input[aria-label*="kode" i]') ||
-    // Fallback umum input kode numeric
     document.querySelector('input[inputmode="numeric"]') ||
     document.querySelector('input[maxlength="6"]');
 
@@ -180,7 +234,21 @@ function injectOtpContent(otpVal) {
   return false;
 }
 
-// Eksekusi Batch Injeksi Email ke Semua Tab
+// Ekstraksi Username Instagram Pada Tab DOM
+function extractUsernameContent() {
+  const anchor = [...document.querySelectorAll('a[href^="/"]')].find((a) =>
+    a.querySelector('img[alt*="profile picture" i], img[alt*="foto profil" i]')
+  );
+  if (anchor) {
+    const href = anchor.getAttribute("href");
+    if (href) {
+      return href.replaceAll("/", "").trim();
+    }
+  }
+  return null;
+}
+
+// Eksekusi Batch Injeksi Email dan Sandi ke Semua Tab
 btnInjectEmail.onclick = async () => {
   if (activeList.length === 0) {
     alert("Belum ada email yang di-generate atau di-import.");
@@ -219,7 +287,7 @@ btnInjectEmail.onclick = async () => {
     const p = chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: injectEmailContent,
-      args: [targetEmail]
+      args: [targetEmail, savedPasswordVal]
     }).then(results => {
       if (results?.[0]?.result) injectedCount++;
     }).catch(err => console.warn(`Gagal inject ke Tab ${tab.id}:`, err));
@@ -230,7 +298,7 @@ btnInjectEmail.onclick = async () => {
   await Promise.all(executionPromises);
   await chrome.storage.local.set({ tabEmailMap });
 
-  monitorStatus.innerText = `Selesai: ${injectedCount} tab diisi email.`;
+  monitorStatus.innerText = `Selesai: ${injectedCount} tab diisi email & sandi.`;
   monitorStatus.style.color = "#42b72a";
 };
 
@@ -274,7 +342,6 @@ btnInjectOtp.onclick = async () => {
       }
     }
   } else {
-    // Fallback: Distribusi OTP berurutan ke tab jika belum ada histori pemetaan
     const currentWindowTabs = await chrome.tabs.query({ currentWindow: true });
     const targetTabs = currentWindowTabs.filter(t => t.id && t.url && t.url.startsWith("http"));
 
@@ -299,6 +366,67 @@ btnInjectOtp.onclick = async () => {
   monitorStatus.innerText = `Selesai: ${injectedCount} tab diisi OTP.`;
   monitorStatus.style.color = "#42b72a";
 };
+
+// Eksekusi Grab Username Instagram + Email Mapping ke Penampungan
+if (btnGrabUsername) {
+  btnGrabUsername.onclick = async () => {
+    const storage = await chrome.storage.local.get(["tabEmailMap", "saved_ig_usernames"]);
+    const tabEmailMap = storage.tabEmailMap || {};
+    let savedUsernames = storage.saved_ig_usernames || [];
+
+    const currentWindowTabs = await chrome.tabs.query({ currentWindow: true });
+    let targetTabs = currentWindowTabs.filter(
+      (t) =>
+        t.id &&
+        t.url &&
+        (t.url.includes("instagram.com") || t.url.includes("meta.") || t.url.includes("facebook.com")) &&
+        !t.url.startsWith("chrome://") &&
+        !t.url.startsWith("edge://")
+    );
+
+    if (targetTabs.length === 0) {
+      targetTabs = currentWindowTabs.filter((t) => t.id && t.url && (t.url.startsWith("http://") || t.url.startsWith("https://")));
+    }
+
+    if (targetTabs.length === 0) {
+      alert("Tidak ditemukan tab target pada jendela browser ini.");
+      return;
+    }
+
+    let grabbedCount = 0;
+    const executionPromises = [];
+
+    for (const tab of targetTabs) {
+      const mappedEmail = tabEmailMap[tab.id] || "tanpa_email";
+
+      const p = chrome.scripting
+        .executeScript({
+          target: { tabId: tab.id },
+          func: extractUsernameContent
+        })
+        .then((results) => {
+          const username = results?.[0]?.result;
+          if (username) {
+            const entry = `${username} ${mappedEmail}`;
+            if (!savedUsernames.includes(entry)) {
+              savedUsernames.push(entry);
+            }
+            grabbedCount++;
+          }
+        })
+        .catch((err) => console.warn(`Gagal grab username dari Tab ${tab.id}:`, err));
+
+      executionPromises.push(p);
+    }
+
+    await Promise.all(executionPromises);
+    await chrome.storage.local.set({ saved_ig_usernames: savedUsernames });
+    loadSavedUsernames();
+
+    monitorStatus.innerText = `Selesai: ${grabbedCount} username ditarik.`;
+    monitorStatus.style.color = "#42b72a";
+  };
+}
 
 async function pollEmails() {
   if (!isMonitoring || activeList.length === 0) return;
@@ -367,8 +495,16 @@ function stopMonitoring() {
 function loadSavedEmails() {
   chrome.storage.local.get(["saved_temp_emails"], (result) => {
     const list = result.saved_temp_emails || [];
-    savedEmailsBox.value = list.join("\n");
-    savedCountEl.innerText = list.length;
+    if (savedEmailsBox) savedEmailsBox.value = list.join("\n");
+    if (savedCountEl) savedCountEl.innerText = list.length;
+  });
+}
+
+function loadSavedUsernames() {
+  chrome.storage.local.get(["saved_ig_usernames"], (result) => {
+    const list = result.saved_ig_usernames || [];
+    if (savedUsernamesBox) savedUsernamesBox.value = list.join("\n");
+    if (savedUsernamesCountEl) savedUsernamesCountEl.innerText = list.length;
   });
 }
 
@@ -462,16 +598,55 @@ btnDeleteSaved.onclick = () => {
   }
 };
 
-savedEmailsBox.onchange = () => {
-  const lines = savedEmailsBox.value
-    .split("\n")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-  chrome.storage.local.set({ saved_temp_emails: lines }, () => {
-    savedCountEl.innerText = lines.length;
-  });
-};
+if (savedEmailsBox) {
+  savedEmailsBox.onchange = () => {
+    const lines = savedEmailsBox.value
+      .split("\n")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    chrome.storage.local.set({ saved_temp_emails: lines }, () => {
+      if (savedCountEl) savedCountEl.innerText = lines.length;
+    });
+  };
+}
+
+if (btnCopyUsernames) {
+  btnCopyUsernames.onclick = async () => {
+    const content = savedUsernamesBox.value.trim();
+    if (!content) return;
+    await navigator.clipboard.writeText(content).catch(() => {});
+    const originalText = btnCopyUsernames.innerText;
+    btnCopyUsernames.innerText = "Tersalin!";
+    setTimeout(() => {
+      btnCopyUsernames.innerText = originalText;
+    }, 1200);
+  };
+}
+
+if (btnDeleteUsernames) {
+  btnDeleteUsernames.onclick = () => {
+    if (confirm("Hapus semua daftar username + email tersimpan?")) {
+      chrome.storage.local.set({ saved_ig_usernames: [] }, () => {
+        loadSavedUsernames();
+      });
+    }
+  };
+}
+
+if (savedUsernamesBox) {
+  savedUsernamesBox.onchange = () => {
+    const lines = savedUsernamesBox.value
+      .split("\n")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    chrome.storage.local.set({ saved_ig_usernames: lines }, () => {
+      if (savedUsernamesCountEl) savedUsernamesCountEl.innerText = lines.length;
+    });
+  };
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   loadSavedEmails();
+  loadSavedUsernames();
+  loadSavedPassword();
 });

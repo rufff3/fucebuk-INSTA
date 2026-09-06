@@ -41,7 +41,7 @@
     .control-col-stop { flex: 0 0 auto; }
     .inject-panel {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 12px;
     }
     label {
@@ -51,7 +51,7 @@
       display: block;
       margin-bottom: 4px;
     }
-    input[type="number"] {
+    input[type="number"], input[type="password"], input[type="text"] {
       width: 100%;
       padding: 7px 8px;
       background: #242526;
@@ -59,6 +59,11 @@
       border-radius: 6px;
       color: #fff;
       font-size: 13px;
+    }
+    input[readonly] {
+      background: #18191a;
+      color: #8a8d91;
+      cursor: not-allowed;
     }
     button {
       padding: 8px 10px;
@@ -71,19 +76,20 @@
     button:hover { opacity: 0.85; }
     .btn-primary { background: #1877f2; color: #fff; }
     .btn-success { background: #42b72a; color: #fff; }
-    .btn-inject { background: #207be6; color: #fff; flex: 1; padding: 8px; font-size: 12px; }
-    .btn-inject-otp { background: #28a745; color: #fff; flex: 1; padding: 8px; font-size: 12px; }
+    .btn-inject { background: #207be6; color: #fff; flex: 1; padding: 8px; font-size: 11px; }
+    .btn-inject-otp { background: #28a745; color: #fff; flex: 1; padding: 8px; font-size: 11px; }
+    .btn-grab-username { background: #d62976; color: #fff; flex: 1; padding: 8px; font-size: 11px; }
     .btn-stop { background: #fa3e3e; color: #fff; }
     .btn-save { background: #2e89ff; color: #fff; padding: 4px 6px; font-size: 11px; }
     .btn-copy { background: #3a3b3c; color: #fff; padding: 4px 6px; font-size: 11px; }
     .btn-danger { background: #fa3e3e; color: #fff; }
     .table-container {
-      max-height: 280px;
+      max-height: 200px;
       overflow-y: auto;
       border: 1px solid #3e4042;
       border-radius: 6px;
       background: #18191a;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
     table {
       width: 100%;
@@ -126,6 +132,7 @@
       padding: 10px;
       border-radius: 8px;
       border: 1px solid #3a3b3c;
+      margin-bottom: 10px;
     }
     .storage-header {
       display: flex;
@@ -137,7 +144,7 @@
     }
     textarea {
       width: 100%;
-      height: 80px;
+      height: 70px;
       background: #242526;
       border: 1px solid #3e4042;
       border-radius: 6px;
@@ -152,8 +159,19 @@
 <body>
 
   <div class="header">
-    <span>Meta/IG OTP Grabber</span>
+    <span>KONTOLLODON</span>
     <span id="monitor-status" style="font-size: 11px; font-weight: normal; color: #b0b3b8;">Idle</span>
+  </div>
+
+  <div class="storage-section">
+    <div class="storage-header">
+      <span style="font-weight: bold; font-size: 12px;">KATA SANDI</span>
+      <div style="display: flex; gap: 4px;">
+        <button id="btn-edit-password" class="btn-primary" style="padding: 3px 8px; font-size: 11px;">Edit</button>
+        <button id="btn-save-password" class="btn-success" style="padding: 3px 8px; font-size: 11px; display: none;">Simpan</button>
+      </div>
+    </div>
+    <input type="password" id="input-password" readonly placeholder="Masukkan sandi di sini...">
   </div>
 
   <div class="control-panel">
@@ -170,8 +188,9 @@
   </div>
 
   <div class="inject-panel">
-    <button id="btn-inject-email" class="btn-inject">INJECT EMAIL (ALL)</button>
-    <button id="btn-inject-otp" class="btn-inject-otp">INJECT OTP (ALL)</button>
+    <button id="btn-inject-email" class="btn-inject">INJECT EMAIL</button>
+    <button id="btn-inject-otp" class="btn-inject-otp">INJECT OTP</button>
+    <button id="btn-grab-username" class="btn-grab-username">GET USERNAME</button>
   </div>
 
   <div class="table-container">
@@ -193,7 +212,7 @@
 
   <div class="storage-section">
     <div class="storage-header">
-      <span style="font-weight: bold; font-size: 12px;">Tersimpan (<span id="saved-count">0</span>)</span>
+      <span style="font-weight: bold; font-size: 12px;">Email Tersimpan (<span id="saved-count">0</span>)</span>
       <div style="display: flex; gap: 4px;">
         <button id="btn-import-saved" class="btn-success" style="padding: 3px 8px; font-size: 11px;">Import</button>
         <button id="btn-copy-saved" class="btn-primary" style="padding: 3px 8px; font-size: 11px;">Salin</button>
@@ -201,6 +220,17 @@
       </div>
     </div>
     <textarea id="saved-emails-box" placeholder="Alamat email tersimpan..."></textarea>
+  </div>
+
+  <div class="storage-section">
+    <div class="storage-header">
+      <span style="font-weight: bold; font-size: 12px;">Hasil User + Email (<span id="saved-usernames-count">0</span>)</span>
+      <div style="display: flex; gap: 4px;">
+        <button id="btn-copy-usernames" class="btn-primary" style="padding: 3px 8px; font-size: 11px;">Salin</button>
+        <button id="btn-delete-usernames" class="btn-danger" style="padding: 3px 8px; font-size: 11px;">Hapus</button>
+      </div>
+    </div>
+    <textarea id="saved-usernames-box" placeholder="Hasil username email..."></textarea>
   </div>
 
   <script src="popup.js"></script>
