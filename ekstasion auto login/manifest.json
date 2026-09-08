@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Pemicu Auto Login & Clear History (FB & IG)",
+  "version": "2.1",
+  "description": "Menghapus history browser, lalu mengambil akun dari aplikasi luar untuk login otomatis ke Facebook atau Instagram",
+  "permissions": ["tabs", "scripting", "browsingData", "storage", "cookies"],
+  "host_permissions": [
+    "https://*.facebook.com/*",
+    "https://*.instagram.com/*",
+    "http://localhost/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Klik Untuk Jalankan Siklus Login"
+  }
+}
