@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "IG Live Account Validator 3D Ghost Rider",
+  "version": "2.5",
+  "description": "Validasi akun Instagram aktif secara cepat, presisi, dan massal dengan efek 3D Ghost Rider Skull.",
+  "permissions": [
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "https://www.instagram.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IG Live Checker 3D</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    html, body {
+      width: 420px;
+      height: 600px;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 50% 25%, #3d0006 0%, #170002 45%, #050001 80%, #000000 100%);
+      color: #ffd2da;
+      position: relative;
+    }
+
+    #canvas3d {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 420px;
+      height: 600px;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      padding: 14px;
+    }
+
+    .card {
+      background: rgba(10, 1, 3, 0.28);
+      border: 1px solid rgba(255, 40, 60, 0.42);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.9),
+        inset 0 0 20px rgba(255, 20, 40, 0.12);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(1px);
+    }
+
+    .scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #ff3b00, #ff003b, #ff7b00, transparent);
+      box-shadow: 0 0 16px #ff3b00, 0 0 24px #ff003b;
+      opacity: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .card.scanning .scan-line {
+      opacity: 1;
+      animation: scanSweep 1.6s ease-in-out infinite alternate;
+    }
+
+    @keyframes scanSweep {
+      0% { top: 0%; }
+      100% { top: 99%; }
+    }
+
+    h2 {
+      font-size: 15px;
+      text-align: center;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 900;
+      color: #ff2a4b;
+      text-shadow:
+        0 1px 0 #b3001e,
+        0 2px 0 #800015,
+        0 3px 0 #4d000d,
+        0 4px 6px rgba(0, 0, 0, 0.95),
+        0 0 18px rgba(255, 42, 75, 0.9);
+      transform: perspective(250px) rotateX(8deg);
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 4px;
+      color: #ff526c;
+      text-shadow:
+        0 1px 0 #800015,
+        0 2px 0 #4d000d,
+        0 3px 3px rgba(0, 0, 0, 0.9);
+    }
+
+    textarea {
+      width: 100%;
+      height: 115px;
+      background: rgba(12, 1, 4, 0.52);
+      border: 1px solid rgba(255, 50, 70, 0.45);
+      border-radius: 6px;
+      padding: 8px;
+      color: #ffe6eb;
+      font-size: 11px;
+      resize: none;
+      outline: none;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    textarea:focus {
+      border-color: #ff3b00;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 12px rgba(255, 59, 0, 0.6);
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    button {
+      flex: 1;
+      padding: 10px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s, filter 0.2s;
+    }
+
+    #startBtn {
+      background: linear-gradient(180deg, #ff2a00 0%, #b30018 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 140, 100, 0.6);
+      text-shadow:
+        0 1px 0 #660011,
+        0 2px 0 #330009,
+        0 2px 3px rgba(0, 0, 0, 0.8);
+      box-shadow: 
+        0 4px 0 #4d000d,
+        0 6px 14px rgba(0, 0, 0, 0.8);
+    }
+
+    #startBtn:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 
+        0 1px 0 #4d000d,
+        0 2px 5px rgba(0, 0, 0, 0.7);
+    }
+
+    #copyBtn {
+      background: linear-gradient(180deg, #2b050d 0%, #150206 100%);
+      color: #ff4d6a;
+      border: 1px solid rgba(255, 30, 60, 0.55);
+      text-shadow:
+        0 1px 0 #800015,
+        0 2px 0 #4d000d,
+        0 2px 3px rgba(0, 0, 0, 0.8);
+      box-shadow: 
+        0 4px 0 #36000a,
+        0 6px 12px rgba(0, 0, 0, 0.8);
+    }
+
+    #copyBtn:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 
+        0 1px 0 #36000a,
+        0 2px 5px rgba(0, 0, 0, 0.7);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .status-bar {
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #ff99a8;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 40, 60, 0.35);
+      padding-bottom: 5px;
+      text-shadow:
+        0 1px 0 #800015,
+        0 2px 0 #4d000d,
+        0 2px 4px rgba(0, 0, 0, 0.9);
+    }
+
+    .status-live {
+      color: #00ff66;
+      font-weight: 900;
+      text-shadow:
+        0 1px 0 #006622,
+        0 2px 0 #003311,
+        0 0 10px rgba(0, 255, 102, 0.85);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas3d" width="420" height="600"></canvas>
+
+  <div class="container">
+    <div class="card" id="mainCard">
+      <div class="scan-line"></div>
+
+      <h2>Instagram Live Checker</h2>
+
+      <div>
+        <label for="inputData">Data Input:</label>
+        <textarea id="inputData" placeholder="username&#10;username email&#10;username|email"></textarea>
+      </div>
+
+      <div class="action-row">
+        <button type="button" id="startBtn">Mulai Validasi</button>
+        <button type="button" id="copyBtn">Salin Hasil</button>
+      </div>
+
+      <div class="status-bar">
+        <span id="statusInfo">STATUS: SIAP</span>
+        <span id="counterInfo">AKTIF: <span class="status-live" id="liveCounter">0</span></span>
+      </div>
+
+      <div>
+        <label for="outputData">Akun Aktif (Live):</label>
+        <textarea id="outputData" readonly placeholder="Hasil akun aktif akan muncul di sini..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
