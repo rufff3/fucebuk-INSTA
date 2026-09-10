@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Meta/IG TempMail OTP Grabber",
+  "version": "1.5",
+  "description": "Generator email acak, auto-grabber OTP, dan multi-tab auto-injector Meta/IG dengan dukungan multi-provider tempmail.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting",
+    "activeTab",
+    "sidePanel",
+    "contextMenus",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  }
+}
