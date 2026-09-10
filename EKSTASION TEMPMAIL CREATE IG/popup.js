@@ -8,7 +8,7 @@ const PROVIDERS = {
     name: "MNX Family Mailer",
     domains: [
       "fleshbit.net", "burnbit.net", "ingrich.com",
-      "mxdus.com", "ijobns.com", "mnx-family.com", "pmheating.com",
+      "mxdus.com", "mnx-family.com", "pmheating.com",
       "happy-talking.org", "sprytny.edu.pl", "mentalnozdravlje.edu.rs",
       "yiqiconsult.com", "pagonpae.com", "joggingplouguerneau.org",
       "grbto.net", "shakarianlawgroup.com", "sullivanplastic.com", "wifespictures.com",
