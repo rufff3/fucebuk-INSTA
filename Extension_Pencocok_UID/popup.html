@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 520px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1a1a1a;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 15px;
+    }
+    h3 {
+      margin-top: 0;
+      color: #1877f2;
+      text-align: center;
+      border-bottom: 2px solid #2a2a2a;
+      padding-bottom: 8px;
+    }
+    .section {
+      background-color: #242424;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      border: 1px solid #333;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    input[type="password"], input[type="text"] {
+      flex: 1;
+      padding: 8px;
+      background-color: #111;
+      border: 1px solid #444;
+      color: #fff;
+      border-radius: 4px;
+    }
+    button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-blue { background-color: #1877f2; color: white; }
+    .btn-blue:hover { background-color: #145dbf; }
+    .btn-red { background-color: #e41e3f; color: white; }
+    .btn-red:hover { background-color: #b5122b; }
+    .btn-green { background-color: #42b72a; color: white; width: 100%; padding: 10px; font-size: 13px; }
+    .btn-green:hover { background-color: #369622; }
+    
+    label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #aaa;
+      display: block;
+      margin-bottom: 5px;
+    }
+    textarea {
+      width: 100%;
+      height: 90px;
+      background-color: #111;
+      border: 1px solid #444;
+      color: #00ff00;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px;
+      box-sizing: border-box;
+      padding: 6px;
+      border-radius: 4px;
+      resize: vertical;
+    }
+    .txt-dobel { color: #ff9900; }
+    
+    #panel-status {
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 10px;
+      display: none;
+    }
+    .status-ok { background-color: rgba(66, 183, 42, 0.2); color: #42b72a; border: 1px solid #42b72a; }
+    .status-warn { background-color: rgba(255, 153, 0, 0.2); color: #ff9900; border: 1px solid #ff9900; }
+    
+    .footer-copy {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 5px;
+    }
+    .count-badge {
+      font-size: 11px;
+      background-color: #333;
+      padding: 2px 6px;
+      border-radius: 10px;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <h3>MANAGER PENCOCOK UID & COOKIE</h3>
+
+  <div id="panel-status"></div>
+
+  <div class="section">
+    <label>PENGATURAN KATA SANDI TARGET</label>
+    <div class="row">
+      <input type="password" id="input-sandi" placeholder="Masukkan sandi di sini...">
+      <button id="btn-set-sandi" class="btn-blue">SET SANDI</button>
+      <button id="btn-reset-sandi" class="btn-red" style="display:none;">RESET</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <label>INPUT COPIAN COOKIES MENTAH (Per Baris)</label>
+    <textarea id="input-cookies" placeholder="Paste semua cookies di sini...&#10;datr=xxx; c_user=61591039052918; xs=xxx;"></textarea>
+  </div>
+
+  <button id="btn-generate" class="btn-green">PROSES & COCOKKAN DATA</button>
+  <div style="margin-bottom: 12px;"></div>
+
+  <div class="section">
+    <div class="footer-copy">
+      <label>HASIL GENERATE (UID|SANDI|COOKIE)</label>
+      <span id="badge-sukses" class="count-badge">0 Akun</span>
+    </div>
+    <textarea id="output-sukses" readonly placeholder="Hasil susunan sukses muncul di sini..."></textarea>
+    <div class="footer-copy">
+      <span style="font-size: 11px; color: #888;">Format: uid|sandi|cookies</span>
+      <button id="btn-copy-all" class="btn-blue" style="padding: 4px 10px; font-size: 11px;">COPY SEMUA HASIL</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="footer-copy">
+      <label class="txt-dobel">DAFTAR DETEKSI AKUN DOBEL (DIABAIKAN)</label>
+      <span id="badge-dobel" class="count-badge" style="background-color: #553300; color: #ff9900;">0 Akun</span>
+    </div>
+    <textarea id="output-dobel" class="txt-dobel" readonly placeholder="Daftar cookies dengan UID dobel otomatis dibuang ke sini..."></textarea>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
