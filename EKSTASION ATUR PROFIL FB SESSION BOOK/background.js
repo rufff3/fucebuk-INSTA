@@ -248,21 +248,51 @@ async function runFbAutomation(bioText, captionText, postLink, photoObj, coverPh
   function getTokens() {
     let f = '', j = '', c = '', r = '', col = '', sec = '';
     let html = document.documentElement.innerHTML;
-    try { f = require("DTSGInitialData").token; } catch (e) {}
+
+    try { 
+      f = (typeof require === "function" ? (require("DTSGInitialData")?.token || require("DTSGInitData")?.token) : null); 
+    } catch (e) {}
     if (!f) {
-      let m = html.match(/"token":"(.*?)"/);
+      f = window.DTSGInitialData?.token || window.__DTSG_InitialData?.token || document.querySelector('[name="fb_dtsg"]')?.value || "";
+    }
+    if (!f) {
+      let m = html.match(/["']DTSGInitialData["'],\s*\[\],\s*\{["']token["']:\s*["']([^"']+)["']/) ||
+              html.match(/["']async_get_token["']:\s*["']([^"']+)["']/) ||
+              html.match(/"dtsg"\s*:\s*\{"token"\s*:\s*"([^"]+)"/);
       if (m) f = m[1];
     }
+
     if (f) {
       let s = 0;
       for (let i = 0; i < f.length; i++) s += f.charCodeAt(i);
       j = '2' + s;
     }
-    let mc = document.cookie.match(/c_user=(\d+)/);
-    if (mc) c = mc[1];
-    if (!c) c = window.__user || window.Env?.user_id || "";
-    let mr = html.match(/"server_revision":(\d+)/);
-    if (mr) r = mr[1];
+
+    try { 
+      c = (typeof require === "function" ? (require("CurrentUserInitialData")?.USER_ID || require("CurrentUserInitialData")?.ACCOUNT_ID) : null); 
+    } catch (e) {}
+    if (!c) {
+      let mU = html.match(/"USER_ID"\s*:\s*"(\d+)"/) ||
+               html.match(/"actorID"\s*:\s*"(\d+)"/) ||
+               html.match(/"ACCOUNT_ID"\s*:\s*"(\d+)"/);
+      if (mU) c = mU[1];
+    }
+    if (!c) {
+      let mc = document.cookie.match(/(?:c_user|i_user)=(\d+)/);
+      if (mc) c = mc[1];
+    }
+    if (!c) {
+      c = window.__user || window.Env?.user_id || "";
+    }
+
+    try { 
+      r = (typeof require === "function" ? (require("SiteData")?.client_revision?.toString() || require("SiteData")?.server_revision?.toString()) : null); 
+    } catch (e) {}
+    if (!r) {
+      let mr = html.match(/"client_revision"\s*:\s*(\d+)/) || html.match(/"server_revision"\s*:\s*(\d+)/);
+      if (mr) r = mr[1];
+    }
+
     let mCol = html.match(/(YXBwX2NvbGxlY3Rpb24[a-zA-Z0-9_=-]+)/);
     if (mCol) col = mCol[1];
     let mSec = html.match(/(YXBwX3NlY3Rpb24[a-zA-Z0-9_=-]+)/);
