@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { 
+        background-color: #2b364a; 
+        font-family: Arial, sans-serif; 
+        color: white; 
+        width: 350px; 
+        padding: 15px; 
+        margin: 0; 
+        box-sizing: border-box;
+    }
+    .btn-get { 
+        background-color: #27ae60; 
+        color: white; 
+        border: none; 
+        padding: 12px; 
+        width: 100%; 
+        font-size: 16px; 
+        font-weight: bold; 
+        border-radius: 5px; 
+        cursor: pointer; 
+    }
+    .header-row { 
+        display: flex; 
+        justify-content: flex-end; 
+        align-items: center; 
+        margin-top: 12px; 
+        margin-bottom: 6px; 
+    }
+    .total-text { 
+        font-size: 12px; 
+        font-weight: bold; 
+    }
+    textarea { 
+        width: 100%; 
+        height: 200px; 
+        background-color: #eef2f5; 
+        border: none; 
+        border-radius: 5px; 
+        padding: 10px; 
+        box-sizing: border-box; 
+        resize: none; 
+        font-family: monospace; 
+        font-size: 11px; 
+        color: #2c3e50; 
+        outline: none;
+        cursor: not-allowed;
+        white-space: pre;
+        overflow-x: auto;
+    }
+    .bottom-row { 
+        display: flex; 
+        justify-content: space-between; 
+ margin-top: 15px; 
+        gap: 10px; 
+    }
+    .btn-copy { 
+        background-color: #2980b9; 
+        color: white; 
+        border: none; 
+        padding: 12px; 
+        flex: 1; 
+        font-size: 14px; 
+        font-weight: bold; 
+        border-radius: 5px; 
+        cursor: pointer; 
+    }
+    .btn-delete { 
+        background-color: #c0392b; 
+        color: white; 
+        border: none; 
+        padding: 12px; 
+        flex: 1; 
+        font-size: 14px; 
+        font-weight: bold; 
+        border-radius: 5px; 
+        cursor: pointer; 
+    }
+    #modal { 
+        display: none; 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(0,0,0,0.6); 
+        justify-content: center; 
+        align-items: center; 
+        z-index: 10;
+    }
+    .modal-content { 
+        background-color: #34495e; 
+        padding: 20px; 
+        border-radius: 8px; 
+        text-align: center; 
+        width: 240px; 
+    }
+    .modal-content p { 
+        margin-top: 0; 
+        margin-bottom: 20px; 
+        font-weight: bold; 
+        font-size: 15px;
+    }
+    .modal-buttons { 
+        display: flex; 
+        justify-content: center; 
+        gap: 12px; 
+    }
+    .btn-batal { 
+        background-color: #7f8c8d; 
+        color: white; 
+        border: none; 
+        padding: 8px 22px; 
+        font-weight: bold; 
+        border-radius: 4px; 
+        cursor: pointer; 
+    }
+    .btn-ya { 
+        background-color: #c0392b; 
+        color: white; 
+        border: none; 
+        padding: 8px 22px; 
+        font-weight: bold; 
+        border-radius: 4px; 
+        cursor: pointer; 
+    }
+  </style>
+</head>
+<body>
+
+  <button id="btn-get" class="btn-get">get cookies fb</button>
+
+  <div class="header-row">
+    <div id="total-text" class="total-text">Total Akun: 0</div>
+  </div>
+
+  <textarea id="cookie-area" readonly></textarea>
+
+  <div class="bottom-row">
+    <button id="btn-copy" class="btn-copy">copy</button>
+    <button id="btn-delete" class="btn-delete">delete</button>
+  </div>
+
+  <div id="modal">
+    <div class="modal-content">
+      <p>Hapus semua data?</p>
+      <div class="modal-buttons">
+        <button id="btn-batal" class="btn-batal">Batal</button>
+        <button id="btn-ya" class="btn-ya">Ya</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
