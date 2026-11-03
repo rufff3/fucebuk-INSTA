@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Pencocok UID & Filter Dobel",
-  "version": "1.0",
-  "description": "Generator format UID|Sandi|Cookie dengan sistem deteksi dobel otomatis tanpa pop-up",
+  "version": "1.1",
+  "description": "Generator format UID|Sandi|Cookie dengan pemulihan UID rusak dan filter duplikat",
   "permissions": ["storage"],
   "action": {
     "default_popup": "popup.html"
