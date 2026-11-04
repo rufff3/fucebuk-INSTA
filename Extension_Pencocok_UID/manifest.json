@@ -1,10 +1,22 @@
 {
   "manifest_version": 3,
   "name": "Pencocok UID & Filter Dobel",
-  "version": "1.1",
-  "description": "Generator format UID|Sandi|Cookie dengan pemulihan UID rusak dan filter duplikat",
+  "version": "1.2",
+  "description": "Generator format UID|Sandi|Cookie dengan pemulihan UID rusak, filter duplikat, dan pencocok sandi referensi",
   "permissions": ["storage"],
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
   }
 }

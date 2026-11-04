@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnResetSandi = document.getElementById('btn-reset-sandi');
   const badgeLockStatus = document.getElementById('badge-lock-status');
   const inputCookies = document.getElementById('input-cookies');
+  const inputRef = document.getElementById('input-ref');
   const btnGenerate = document.getElementById('btn-generate');
   const outputSukses = document.getElementById('output-sukses');
   const outputDobel = document.getElementById('output-dobel');
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const valSukses = document.getElementById('val-sukses');
   const valDobel = document.getElementById('val-dobel');
   const valFixed = document.getElementById('val-fixed');
+  const valMatched = document.getElementById('val-matched');
 
   let sandiTerkunci = "";
 
@@ -133,33 +135,116 @@ document.addEventListener('DOMContentLoaded', async () => {
     return { rawUid, rawPass, rawCookie };
   }
 
+  // Membuat tabel referensi kata sandi valid dari kolom kanan berdasarkan UID
+  function buatMapReferensi(rawDataRef) {
+    const mapRef = new Map();
+    if (!rawDataRef) return mapRef;
+
+    const barisList = rawDataRef.split("\n");
+    for (let baris of barisList) {
+      const line = baris.trim();
+      if (!line) continue;
+
+      let uid = "";
+      let pass = "";
+
+      const matchFb = line.match(/c_user=(\d+)/);
+      const matchIg = line.match(/ds_user_id=(\d+)/);
+      const cookieUid = matchFb ? matchFb[1] : (matchIg ? matchIg[1] : null);
+
+      if (line.includes('|')) {
+        const parts = line.split('|');
+        uid = parts[0].trim();
+        if (parts.length >= 2) {
+          pass = parts[1].trim();
+        }
+      } else {
+        const matchSpace = line.match(/\s+/);
+        if (matchSpace) {
+          uid = line.slice(0, matchSpace.index).trim();
+          const sisa = line.slice(matchSpace.index + matchSpace[0].length).trim();
+          const matchSpace2 = sisa.match(/\s+/);
+          if (matchSpace2) {
+            pass = sisa.slice(0, matchSpace2.index).trim();
+          } else {
+            pass = sisa;
+          }
+        }
+      }
+
+      if (pass) {
+        if (uid) mapRef.set(uid, pass);
+        if (cookieUid) mapRef.set(cookieUid, pass);
+      }
+    }
+    return mapRef;
+  }
+
+  // Deteksi apakah sebuah baris memiliki string cookies aktif (FB/IG/format pasangan cookie)
+  function apakahPunyaCookie(cookieStr, lineStr) {
+    if (!cookieStr && !lineStr) return false;
+    const gabungan = `${cookieStr || ""} ${lineStr || ""}`;
+    if (/c_user=\d+|ds_user_id=\d+|xs=[^;]+|datr=[^;]+|sessionid=[^;]+/i.test(gabungan)) {
+      return true;
+    }
+    if (cookieStr && cookieStr.includes(';') && cookieStr.includes('=')) {
+      return true;
+    }
+    return false;
+  }
+
   // Pemrosesan utama
   btnGenerate.addEventListener('click', () => {
     const rawData = inputCookies.value.trim();
+    const rawDataRef = inputRef.value.trim();
+
     if (!rawData) {
-      tampilkanStatus("Masukkan data pada area input!", "warn");
+      tampilkanStatus("Masukkan data pada area input kiri (Data Utama)!", "warn");
       return;
     }
 
+    const mapRef = buatMapReferensi(rawDataRef);
     const barisList = rawData.split("\n");
-    let listSukses = [];
-    let listDobel = [];
-    let setUidsTerproses = new Set();
-    let countFixed = 0;
-    let adaSandiKosong = false;
 
-    // Tahap verifikasi awal kebutuhan kata sandi
+    let mapSukses = new Map();
+    let listDobel = [];
+    let passPerUid = new Map();
+
+    // Petakan password dari data referensi kolom kanan
+    for (let [uid, pass] of mapRef.entries()) {
+      if (pass) passPerUid.set(uid, pass);
+    }
+
+    // Petakan password yang terbawa di baris kolom kiri (misal baris UID|Sandi|2FA)
     for (let baris of barisList) {
       if (!baris.trim()) continue;
       const parsed = parseBaris(baris);
-      if (!parsed.rawPass && !sandiTerkunci) {
+      const matchFb = parsed.rawCookie.match(/c_user=(\d+)/) || baris.match(/c_user=(\d+)/);
+      const matchIg = parsed.rawCookie.match(/ds_user_id=(\d+)/) || baris.match(/ds_user_id=(\d+)/);
+      const tempUid = (matchFb ? matchFb[1] : (matchIg ? matchIg[1] : null)) || parsed.rawUid;
+      if (tempUid && parsed.rawPass && !passPerUid.has(tempUid)) {
+        passPerUid.set(tempUid, parsed.rawPass);
+      }
+    }
+
+    // Verifikasi kelengkapan kata sandi
+    let adaSandiKosong = false;
+    for (let baris of barisList) {
+      if (!baris.trim()) continue;
+      const parsed = parseBaris(baris);
+      const matchFb = parsed.rawCookie.match(/c_user=(\d+)/) || baris.match(/c_user=(\d+)/);
+      const matchIg = parsed.rawCookie.match(/ds_user_id=(\d+)/) || baris.match(/ds_user_id=(\d+)/);
+      const tempUid = (matchFb ? matchFb[1] : (matchIg ? matchIg[1] : null)) || parsed.rawUid;
+
+      const adaPass = parsed.rawPass || (tempUid && passPerUid.has(tempUid)) || sandiTerkunci;
+      if (!adaPass) {
         adaSandiKosong = true;
         break;
       }
     }
 
     if (adaSandiKosong) {
-      tampilkanStatus("Terdapat data tanpa kata sandi! Atur dan 'KUNCI' sandi terlebih dahulu.", "warn");
+      tampilkanStatus("Terdapat data tanpa kata sandi! Atur dan 'KUNCI' sandi atau sertakan data referensi sandi.", "warn");
       return;
     }
 
@@ -191,20 +276,79 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (!finalUid) return;
 
-      const finalPass = rawPass ? rawPass : sandiTerkunci;
-      const cleanCookie = rawCookie ? rawCookie : line;
+      // Cek status kepemilikan cookies
+      const hasCookie = apakahPunyaCookie(rawCookie, line);
 
-      // Filter duplikat
-      if (setUidsTerproses.has(finalUid)) {
-        listDobel.push(`[DOBEL UID: ${finalUid}] | ${line}`);
+      // Penentuan kata sandi:
+      // 1. Prioritaskan kolom kanan (referensi)
+      // 2. Sandi dari baris ini
+      // 3. Sandi yang terpetakan untuk UID ini dari baris cadangan
+      // 4. Sandi default terkunci
+      let finalPass = "";
+      let wasPassMatched = false;
+
+      if (mapRef.has(finalUid)) {
+        finalPass = mapRef.get(finalUid);
+        wasPassMatched = true;
+      } else if (rawPass) {
+        finalPass = rawPass;
+      } else if (passPerUid.has(finalUid)) {
+        finalPass = passPerUid.get(finalUid);
       } else {
-        setUidsTerproses.add(finalUid);
-        listSukses.push(`${finalUid}|${finalPass}|${cleanCookie}`);
-        if (wasFixed) {
-          countFixed++;
+        finalPass = sandiTerkunci;
+      }
+
+      // Cookie selalu mengambil dari data kolom kiri (sesi fresh)
+      const cleanCookie = rawCookie ? rawCookie : line;
+      const formattedOutput = `${finalUid}|${finalPass}|${cleanCookie}`;
+
+      const currentEntry = {
+        finalUid,
+        finalPass,
+        cleanCookie,
+        hasCookie,
+        wasFixed,
+        wasPassMatched,
+        rawPass,
+        originalLine: line,
+        formattedOutput
+      };
+
+      // Filter duplikat dengan prioritas kepemilikan cookies
+      if (mapSukses.has(finalUid)) {
+        const existingEntry = mapSukses.get(finalUid);
+
+        if (!existingEntry.hasCookie && currentEntry.hasCookie) {
+          // Akun lama tidak punya cookies (hanya 2FA), akun baru punya cookies:
+          // Akun lama dipindahkan ke duplikat, akun baru dengan cookies dijadikan data utama
+          listDobel.push(`[DOBEL UID: ${finalUid}] | ${existingEntry.originalLine}`);
+
+          // Jika baris cookies tidak memiliki sandi bawaan dan tidak ada di referensi, warisi sandi dari baris 2FA
+          if (!currentEntry.rawPass && existingEntry.rawPass && !mapRef.has(finalUid)) {
+            currentEntry.finalPass = existingEntry.rawPass;
+            currentEntry.formattedOutput = `${finalUid}|${currentEntry.finalPass}|${cleanCookie}`;
+          }
+
+          mapSukses.set(finalUid, currentEntry);
+        } else {
+          // Akun lama sudah punya cookies, atau kedua akun status cookies-nya sama:
+          // Baris saat ini diklasifikasikan sebagai duplikat
+          listDobel.push(`[DOBEL UID: ${finalUid}] | ${line}`);
         }
+      } else {
+        mapSukses.set(finalUid, currentEntry);
       }
     });
+
+    let listSukses = [];
+    let countFixed = 0;
+    let countMatched = 0;
+
+    for (const entry of mapSukses.values()) {
+      listSukses.push(entry.formattedOutput);
+      if (entry.wasFixed) countFixed++;
+      if (entry.wasPassMatched) countMatched++;
+    }
 
     outputSukses.value = listSukses.join("\n");
     outputDobel.value = listDobel.join("\n");
@@ -212,11 +356,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     valSukses.innerText = listSukses.length;
     valDobel.innerText = listDobel.length;
     valFixed.innerText = countFixed;
+    valMatched.innerText = countMatched;
 
     if (listSukses.length > 0) {
       let pesanStatus = `Berhasil memproses ${listSukses.length} akun. ${listDobel.length} akun duplikat disisihkan.`;
-      if (countFixed > 0) {
-        pesanStatus = `Sukses: ${listSukses.length} akun (${countFixed} akun diperbaiki karena UID & cookie beda), ${listDobel.length} duplikat dibuang.`;
+      const detailPesan = [];
+      if (countFixed > 0) detailPesan.push(`${countFixed} UID diperbaiki`);
+      if (countMatched > 0) detailPesan.push(`${countMatched} sandi dicocokkan`);
+      if (detailPesan.length > 0) {
+        pesanStatus = `Sukses: ${listSukses.length} akun (${detailPesan.join(', ')}), ${listDobel.length} duplikat dibuang.`;
       }
       tampilkanStatus(pesanStatus, "ok");
     } else {

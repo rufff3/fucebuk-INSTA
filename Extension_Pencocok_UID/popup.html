@@ -14,6 +14,7 @@
       --accent-green-hover: #059669;
       --accent-amber: #f59e0b;
       --accent-purple: #8b5cf6;
+      --accent-cyan: #06b6d4;
       --text-main: #f1f5f9;
       --text-muted: #94a3b8;
     }
@@ -24,7 +25,7 @@
     }
 
     body {
-      width: 400px;
+      width: 580px;
       background-color: var(--bg-main);
       color: var(--text-main);
       margin: 0;
@@ -38,6 +39,18 @@
       border-bottom: 1px solid var(--border-color);
       padding-bottom: 10px;
       margin-bottom: 12px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-logo {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
     }
 
     .header-title {
@@ -144,9 +157,58 @@
       box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
     }
 
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .input-card {
+      margin-bottom: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      line-height: 1.35;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 5px 6px;
+      border-radius: 4px;
+      border: 1px dashed var(--border-color);
+    }
+
+    .input-desc code {
+      color: #60a5fa;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 9.5px;
+    }
+
+    .badge-tag {
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .badge-primary {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-secondary {
+      background: rgba(37, 99, 235, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(96, 165, 250, 0.3);
+    }
+
     textarea {
       width: 100%;
-      height: 75px;
+      height: 85px;
       background-color: var(--bg-input);
       border: 1px solid var(--border-color);
       color: #e2e8f0;
@@ -169,7 +231,7 @@
 
     .stats-container {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: repeat(4, 1fr);
       gap: 6px;
       margin-bottom: 10px;
     }
@@ -198,6 +260,7 @@
     .color-sukses { color: var(--accent-green); }
     .color-dobel { color: var(--accent-amber); }
     .color-fixed { color: var(--accent-purple); }
+    .color-matched { color: var(--accent-cyan); }
 
     #panel-status {
       padding: 8px 10px;
@@ -248,30 +311,53 @@
 <body>
 
   <div class="header">
-    <h3 class="header-title">PARSER & PENCOCOK AKUN</h3>
-    <span class="header-tag">PRO v1.1</span>
+    <div class="header-left">
+      <img src="icon32.png" alt="Logo" class="header-logo">
+      <h3 class="header-title">PARSER & PENCOCOK AKUN</h3>
+    </div>
+    <span class="header-tag">PRO v1.2</span>
   </div>
 
   <div id="panel-status"></div>
 
   <div class="card">
     <div class="label-title">
-      <span>Kata Sandi Target (Default)</span>
+      <span>Kata Sandi Target (Default Cadangan)</span>
       <span id="badge-lock-status" style="color: #64748b; font-size: 10px;">Belum Dikunci</span>
     </div>
     <div class="row">
-      <input type="password" id="input-sandi" placeholder="Isi sandi pengganti...">
+      <input type="password" id="input-sandi" placeholder="Isi sandi pengganti jika data kosong...">
       <button id="btn-set-sandi" class="btn-blue">KUNCI</button>
       <button id="btn-reset-sandi" class="btn-red" style="display:none;">RESET</button>
     </div>
   </div>
 
-  <div class="card">
-    <div class="label-title">
-      <span>Input Data Mentah</span>
-      <span style="font-size: 10px; color: #64748b;">Multi-format</span>
+  <div class="input-grid">
+    <!-- Kolom Kiri: Data Utama / Mentah -->
+    <div class="card input-card">
+      <div class="label-title">
+        <span>Data Utama (Sesi Aktif)</span>
+        <span class="badge-tag badge-primary">Wajib</span>
+      </div>
+      <div class="input-desc">
+        Data yang diproses. Jika ditumpuk dengan data 2FA lama, baris berkuki otomatis diprioritaskan.<br>
+        <b>Format:</b> <code>UID|Sandi|Cookies</code>, <code>UID|Sandi|2FA</code>, atau Cookie mentah.
+      </div>
+      <textarea id="input-cookies" placeholder="Paste data akun per baris...&#10;1000123|sandiSalah|sb=...; c_user=1000123;&#10;1000123|sandiLama|2FAKEY123"></textarea>
     </div>
-    <textarea id="input-cookies" placeholder="Paste data akun di sini (per baris)...&#10;Mendukung:&#10;• uid|sandi|cookies&#10;• uid sandi cookies&#10;• uid||cookies / uid cookies&#10;• cookies mentah (datr=...; c_user=...;)"></textarea>
+
+    <!-- Kolom Kanan: Data Referensi Benar -->
+    <div class="card input-card">
+      <div class="label-title">
+        <span>Data Referensi Benar</span>
+        <span class="badge-tag badge-secondary">Opsional</span>
+      </div>
+      <div class="input-desc">
+        Pencocok sandi valid berdasarkan UID. Cookie lama diabaikan.<br>
+        <b>Format:</b> <code>UID|Sandi_Benar</code> atau baris akun lengkap.
+      </div>
+      <textarea id="input-ref" placeholder="(Opsional) Data dengan sandi benar...&#10;1000123|SandiBenarValid&#10;1000124|SandiBenarValid|cookie_mati"></textarea>
+    </div>
   </div>
 
   <button id="btn-generate" class="btn-process">PROSES & SINKRONKAN DATA</button>
@@ -287,7 +373,11 @@
     </div>
     <div class="stat-pill">
       <span id="val-fixed" class="stat-number color-fixed">0</span>
-      <span class="stat-label">UID Diperbaiki</span>
+      <span class="stat-label">UID Fixed</span>
+    </div>
+    <div class="stat-pill">
+      <span id="val-matched" class="stat-number color-matched">0</span>
+      <span class="stat-label">Sandi Cocok</span>
     </div>
   </div>
 
