@@ -187,6 +187,70 @@ function autoLoginFacebook(uid, password) {
     clearInterval(window.__fbLoginTimer);
   }
 
+  // Pengaturan limit klik per akun
+  if (window.__fbContinueUid !== uid) {
+    window.__fbContinueUid = uid;
+    window.__fbContinueClicked = false;
+  }
+
+  // Listener input: me-reset batas 1x jika data dihapus dan dimasukkan kembali
+  if (!window.__fbInputResetHandler) {
+    window.__fbInputResetHandler = true;
+    let dataHadBeenCleared = false;
+
+    document.addEventListener("input", (e) => {
+      const target = e.target;
+      if (!target || (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA")) return;
+
+      const val = (target.value || "").trim();
+      if (val === "") {
+        dataHadBeenCleared = true;
+      } else {
+        if (dataHadBeenCleared || window.__fbContinueClicked) {
+          window.__fbContinueClicked = false;
+          dataHadBeenCleared = false;
+        }
+      }
+    }, true);
+  }
+
+  // Penangkal: Memeriksa apakah halaman aktif berada di dalam daftar blacklist (Captcha, 2FA, Verifikasi Manusia/Profil)
+  function isIgnoredContinuePage() {
+    const text = (document.body ? (document.body.innerText || "") : "").toLowerCase();
+
+    // Halaman 1: Captcha & Verifikasi Manusia / Profil (Bahasa Inggris & Bahasa Indonesia)[cite: 3, 4, 6]
+    const isCaptchaPage = 
+      text.includes("confirm you're human") ||
+      text.includes("confirm you’re human") ||
+      text.includes("confirm that you're human") ||
+      text.includes("confirm that you’re human") ||
+      text.includes("konfirmasikan bahwa anda manusia") ||
+      text.includes("konfirmasi bahwa anda manusia") ||
+      text.includes("konfirmasikan bahwa anda adalah manusia") ||
+      text.includes("konfirmasi bahwa anda adalah manusia") ||
+      text.includes("menggunakan profil anda") ||
+      text.includes("to use your profile") ||
+      text.includes("perlu waktu sekitar 30 detik") ||
+      text.includes("takes about 30 seconds") ||
+      text.includes("enter the text from the image") ||
+      text.includes("masukkan teks dari gambar") ||
+      text.includes("hear this code") ||
+      text.includes("dengarkan kode ini");
+
+    // Halaman 2: 2FA Authentication App (Bahasa Inggris & Bahasa Indonesia)[cite: 5]
+    const is2FAPage = 
+      text.includes("go to your authentication app") ||
+      text.includes("buka aplikasi autentikasi anda") ||
+      text.includes("two-factor authentication") ||
+      text.includes("autentikasi dua faktor") ||
+      text.includes("enter the 6-digit code") ||
+      text.includes("masukkan kode 6 digit") ||
+      text.includes("google authenticator") ||
+      text.includes("duo mobile");
+
+    return isCaptchaPage || is2FAPage;
+  }
+
   function isVisible(el) {
     if (!el) return false;
     const style = window.getComputedStyle(el);
@@ -244,6 +308,9 @@ function autoLoginFacebook(uid, password) {
   }
 
   function findContinueButton() {
+    // Abaikan total jika berada di halaman blacklist
+    if (isIgnoredContinuePage()) return null;
+
     let btn = document.querySelector(
       'div[role="button"][tabindex="0"][aria-label*="Continue" i], div[role="button"][tabindex="0"][aria-label*="Lanjutkan" i]'
     );
@@ -276,8 +343,6 @@ function autoLoginFacebook(uid, password) {
     });
   }
 
-  let continueClicked = false;
-
   window.__fbLoginTimer = setInterval(() => {
     const passInputs = Array.from(document.querySelectorAll('input[type="password"], input[name="pass"]'));
     const visiblePass = passInputs.find(isVisible);
@@ -304,15 +369,13 @@ function autoLoginFacebook(uid, password) {
       return;
     }
 
-    // Skenario B: Terpental ke halaman profil dengan tombol Continue aktif
-    if (!continueClicked) {
+    // Skenario B: Tombol Continue / Lanjutkan (Hanya 1x per akun, diabaikan total pada semua halaman blacklist)
+    if (!window.__fbContinueClicked && !isIgnoredContinuePage()) {
       const continueBtn = findContinueButton();
-      if (continueBtn && !visiblePass) {
-        continueClicked = true;
+      const isBtnDisabled = continueBtn && (continueBtn.disabled || continueBtn.getAttribute("aria-disabled") === "true");
+      if (continueBtn && !isBtnDisabled && !visiblePass) {
+        window.__fbContinueClicked = true;
         triggerClick(continueBtn);
-        setTimeout(() => {
-          continueClicked = false;
-        }, 3000);
         return;
       }
     }
